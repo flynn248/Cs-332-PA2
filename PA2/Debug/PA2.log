@@ -1,2 +1,4 @@
-﻿  Source.cpp
-  PA2.vcxproj -> C:\Users\Shane\Documents\UW-Whitewater\Spring 2021\Intro to AI 332\Code\PA2\Debug\PA2.exe
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(491,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (PA2.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  Source.cpp
+C:\Users\Shane\Documents\UW-Whitewater\Spring 2021\Intro to AI 332\Code\PA2\PA2\Source.cpp(255,2): error C2561: 'AStar': function must return a value
+C:\Users\Shane\Documents\UW-Whitewater\Spring 2021\Intro to AI 332\Code\PA2\PA2\Source.cpp(185): message : see declaration of 'AStar'

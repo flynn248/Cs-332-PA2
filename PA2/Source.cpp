@@ -197,7 +197,7 @@ std::vector<int> AStar(double hScore[], int& source, int& target, int **adjMatx,
 		fScore[i] = std::numeric_limits<double>::max();
 		prev[i] = -1;
 	}
-
+	
 	gScore[source] = 0;
 	fScore[source] = gScore[source] + hScore[source];
 
