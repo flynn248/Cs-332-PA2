@@ -11,15 +11,15 @@
 
 void openFileCheck(std::fstream&);
 int countNodesInFile(std::fstream&);
-void displayMenu(std::string*, double**, int&);
 void doPart(std::string, std::string, std::string);
 double** readAdjancyMatrix(std::fstream&, const int);
 double* readHeuristicInFile(std::fstream&, const int);
 std::string* readNodesInFile(std::fstream &, const int);
-std::vector<int> AStar(double[], int&, int&, int**, const int&);
+std::vector<int> AStar(double[], int, int, double**, const int&, std::string *);
 
 int main()
 {
+
 	doPart("PA2 Part 1 Names.csv", "PA2 Part 1 Heuristics.csv", "PA2 Part 1 Distances.csv"); //Part 1
 	doPart("PA2 Part 2 Names.csv", "PA2 Part 2 Heuristics.csv", "PA2 Part 2 Distances.csv"); //Part 2
 
@@ -37,13 +37,6 @@ void doPart(std::string nodeNamesFileName, std::string nodeHeuristicFileName, st
 
 	readNames.close();
 
-	std::fstream readHeuristics(nodeHeuristicFileName, std::ios::in);
-	openFileCheck(readHeuristics);
-
-	double* hScore = readHeuristicInFile(readHeuristics, size);
-
-	readHeuristics.close();
-
 	std::fstream readAdjMatrixFile(matrixFileName, std::ios::in);
 	openFileCheck(readAdjMatrixFile);
 
@@ -51,6 +44,18 @@ void doPart(std::string nodeNamesFileName, std::string nodeHeuristicFileName, st
 
 	readAdjMatrixFile.close();
 
+	double* hScore = new double[size]();
+
+	std::cout << "Uniform Cost Search Results:\n";
+	AStar(hScore, 0, size - 1, adjMatrix, size, nodeArray);
+
+	std::fstream readHeuristics(nodeHeuristicFileName, std::ios::in);
+	openFileCheck(readHeuristics);
+	hScore = readHeuristicInFile(readHeuristics, size);
+
+	readHeuristics.close();
+
+	AStar(hScore, 0, size - 1, adjMatrix, size, nodeArray);
 
 	for (int i = 0; i < size; i++)
 	{
@@ -169,42 +174,29 @@ void openFileCheck(std::fstream& file) //check if file failed to open
 	}
 }
 
-void displayMenu(std::string* labelA, double** edgeA, int& size) //display stuff to user
-{
-	std::cout << "Necessary files have been read!\n" << std::endl;
-
-	std::cout << "\tUniform Cost Search Results :\n"
-		<< "Path: " << std::endl
-		<< "Cost: " << std::endl
-		<< "Explored: " << std::endl
-		<< "Fringe: " << std::endl;
-
-	std::cout << "A * Search Results: " << std::endl;
-}
-
-std::vector<int> AStar(double hScore[], int& source, int& target, int **adjMatx, const int& SIZE) {
+std::vector<int> AStar(double hScore[], int source, int target, double **adjMatx, const int& SIZE, std::string *nodeNames) {
 	std::vector<int> openSet = {}; //also called firnge
 	std::vector<int> closedSet = {};
 
 	int* prev = new int[SIZE](); //store the previous
 
-	double* gScore = new double[SIZE]; //Cheapest path from source to given node
+	double* gScore = new double[SIZE](); //Cheapest path from source to given node
 
-	double* fScore = new double[SIZE]; //f(n) = g(n) + h(n)
+	double* fScore = new double[SIZE](); //f(n) = g(n) + h(n)
 
 	for (int i = 0; i < SIZE; i++){ //initialize the arrays
 		gScore[i] = std::numeric_limits<double>::max();
 		fScore[i] = std::numeric_limits<double>::max();
 		prev[i] = -1;
 	}
-	
+
 	gScore[source] = 0;
 	fScore[source] = gScore[source] + hScore[source];
 
 	openSet.push_back(source);
 
 	while (openSet.empty() == false){
-		
+		std::cout << "Stuck in here\n";
 		int currIndex = 0;
 		int current = *openSet.begin();
 
@@ -213,17 +205,44 @@ std::vector<int> AStar(double hScore[], int& source, int& target, int **adjMatx,
 				current = *it;
 		}
 
-		openSet.erase(openSet.begin()+currIndex); //remove current from open set
+		openSet.erase(openSet.begin()+currIndex-1); //remove current from open set
 		closedSet.push_back(current); // add to closed set
 
 		if (current == target) {
 			std::vector<int> path;
+
+			int cost = gScore[current];
+
 			while (current != -1) {
 				path.push_back(current);
 				current = prev[current];
 			}
 			
 			std::reverse(path.begin(), path.end());
+
+			//Output of results
+			std::cout << "Path: [";
+			for (int i = 0; i < SIZE; i++) {
+				if (i = SIZE - 1)
+					std::cout << nodeNames[path[i]];
+				else
+					std::cout << nodeNames[path[i]] << "->";
+			}
+			std::cout << "]\n"
+				<< "Cost: " << cost << std::endl
+				<< "Explored: ";
+
+			for (std::vector<int>::iterator it = closedSet.begin(); it != closedSet.end(); it++) {
+				std::cout << nodeNames[*it] << " ";
+			}
+			std::cout << "\nFringe: ";
+
+			for (std::vector<int>::iterator it = openSet.begin(); it != openSet.end(); it++) {
+				std::cout << nodeNames[*it] << " ";
+			}
+
+
+
 			return path;
 		}
 
@@ -239,18 +258,19 @@ std::vector<int> AStar(double hScore[], int& source, int& target, int **adjMatx,
 					fScore[neighbor] = gScore[neighbor] + hScore[neighbor];
 
 					prev[neighbor] = current;
-				}
 
-				std::vector<int>::iterator inSet = std::find(closedSet.begin(), closedSet.end(), neighbor);
-				if (inSet != closedSet.end()) {
-					openSet.erase(inSet);
-					openSet.push_back(neighbor);
+
+					std::vector<int>::iterator inSet = std::find(closedSet.begin(), closedSet.end(), neighbor);
+					if (inSet != closedSet.end()) {
+						closedSet.erase(inSet);
+						openSet.push_back(neighbor);
+					}
+					else if (!(std::find(openSet.begin(), openSet.end(), neighbor) != openSet.end())) //if neighbor is not in open set
+						openSet.push_back(neighbor);
 				}
-				else if (!(std::find(openSet.begin(), openSet.end(), neighbor) != openSet.end())) //if neighbor is not in open set
-					openSet.push_back(neighbor);
 			}
 		}
 	}
-
-	return;
+	
+	return std::vector<int>(); //Return null if no path found
 }
