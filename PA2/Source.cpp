@@ -19,8 +19,9 @@ std::vector<int> AStar(double[], int, int, double**, const int&, std::string *);
 
 int main()
 {
-
+	std::cout << "Graph #1\n\n";
 	doPart("PA2 Part 1 Names.csv", "PA2 Part 1 Heuristics.csv", "PA2 Part 1 Distances.csv"); //Part 1
+	std::cout << "Graph #2\n\n";
 	doPart("PA2 Part 2 Names.csv", "PA2 Part 2 Heuristics.csv", "PA2 Part 2 Distances.csv"); //Part 2
 
 	std::cin.get();
@@ -55,21 +56,8 @@ void doPart(std::string nodeNamesFileName, std::string nodeHeuristicFileName, st
 
 	readHeuristics.close();
 
+	std::cout << "A* Search Results:\n";
 	AStar(hScore, 0, size - 1, adjMatrix, size, nodeArray);
-
-	for (int i = 0; i < size; i++)
-	{
-		std::cout << nodeArray[i] << "   " << hScore[i] << std::endl;
-	}
-
-	for (int i = 0; i < size; i++)
-	{
-		for (int j = 0; j < size; j++)
-		{
-			std::cout << std::setw(3) << adjMatrix[i][j];
-		}
-		std::cout << std::endl;
-	}
 
 
 	for (int i = 0; i < size; i++) //deleting row of pointers
@@ -196,16 +184,18 @@ std::vector<int> AStar(double hScore[], int source, int target, double **adjMatx
 	openSet.push_back(source);
 
 	while (openSet.empty() == false){
-		std::cout << "Stuck in here\n";
-		int currIndex = 0;
+
 		int current = *openSet.begin();
 
-		for (std::vector<int>::iterator it = openSet.begin(); it != openSet.end(); it++, currIndex++) { //current = node in openSet with lowest fScore
-			if (fScore[*it] <= fScore[current])
+		std::vector<int>::iterator curr = openSet.begin();
+		for (std::vector<int>::iterator it = openSet.begin(); it != openSet.end(); it++) { //current = node in openSet with lowest fScore
+			if (fScore[*it] <= fScore[current]) {
 				current = *it;
+				curr = it;
+			}
 		}
 
-		openSet.erase(openSet.begin()+currIndex-1); //remove current from open set
+		openSet.erase(curr); //remove current from open set
 		closedSet.push_back(current); // add to closed set
 
 		if (current == target) {
@@ -222,11 +212,11 @@ std::vector<int> AStar(double hScore[], int source, int target, double **adjMatx
 
 			//Output of results
 			std::cout << "Path: [";
-			for (int i = 0; i < SIZE; i++) {
-				if (i = SIZE - 1)
-					std::cout << nodeNames[path[i]];
+			for (std::vector<int>::iterator it = path.begin(); it != path.end(); it++) {
+				if (it == path.end()-1)
+					std::cout << nodeNames[*it];
 				else
-					std::cout << nodeNames[path[i]] << "->";
+					std::cout << nodeNames[*it] << "->";
 			}
 			std::cout << "]\n"
 				<< "Cost: " << cost << std::endl
@@ -240,7 +230,7 @@ std::vector<int> AStar(double hScore[], int source, int target, double **adjMatx
 			for (std::vector<int>::iterator it = openSet.begin(); it != openSet.end(); it++) {
 				std::cout << nodeNames[*it] << " ";
 			}
-
+			std::cout << std::endl << std::endl;
 
 
 			return path;
